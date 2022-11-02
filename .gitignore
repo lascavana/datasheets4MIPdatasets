@@ -3,8 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# project specific
 results/
 benchmarks/
+*.dylib
 
 # C extensions
 *.so
