@@ -48,6 +48,7 @@ with open(result_file, 'w', newline='') as csvfile:
 
         results = {'instance': instance,
                   'fingerprint': fingerprint,
+                  'setting': sett,
                   'seed': seed }
 
 
@@ -67,10 +68,8 @@ with open(result_file, 'w', newline='') as csvfile:
         print(results)
 
         m.freeProb()
-        break
 
         writer.writerow(results)
         csvfile.flush()
-    break
 
 
