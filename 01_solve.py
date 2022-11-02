@@ -10,7 +10,7 @@ result_file = f'results/{problem}.csv'
 instance_path = f'benchmarks/{problem}'
 instances = glob.glob(f"{instance_path}/*.lp")
 
-fieldnames = ['instance', 'seed', 'fingerprint', 'nnodes', 'time', 'status', 'gap']
+fieldnames = ['instance', 'seed', 'fingerprint', 'setting', 'nnodes', 'time', 'status', 'gap']
 
 default_settings = {'limits/time': 3600,
                     'limits/memory': 4000,
