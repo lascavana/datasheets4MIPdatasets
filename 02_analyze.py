@@ -4,36 +4,45 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+def gmean(x):
+  x = np.array(x)
+  if np.where(x==0.0)[0].size > 0:
+    return 0.0
+  else:
+    a = np.log(x)
+    return np.exp(a.mean())
+
+
+result_file = "results/cauctions_100500.csv"
 
 # read csv file #
 results = {}
 data = pd.read_csv(result_file)
 instances = set(data['instance'])
 seeds = set(data['seed'])
-fingerprints = set(data['fingerprint'])
+settings = set(data['setting'])
 
 # read results according to metric of choice #
 metric = 'nnodes'
-results = {fingerprint: [] for fingerprint in fingerprints}
-for instance in instances:
-  i_data = data.loc[data['instance'] == instance]
-  vals = []
-  for seed in seeds:
-    is_data = i_data.loc[i_data['seed'] == seed]
-    vals.append(is_data[metric].values[0])
+results = {setting: [] for setting in settings}
+for setting in settings:
+  d = data.loc[data['setting'] == setting]
+  for instance in instances:
+    i_data = d.loc[data['instance'] == instance]
+    vals = []
+    for seed in seeds:
+      is_data = i_data.loc[i_data['seed'] == seed]
+      vals.append(is_data[metric].values[0])
 
-  vals = gmean(vals)
-  instance_fingerprint = i_data['fingerprint'].values[0]
-  results[instance_fingerprint].append(vals)
+    vals = gmean(vals)
+    results[setting].append(vals)
 
 means = []
 stds = []
-for fingerprint in ['100500', '2001000', '3001500']:
-  print(fingerprint, results[fingerprint])
-  mean = gmean(results[fingerprint])
+for setting in settings:
+  mean = gmean(results[setting])
   means.append(mean)
-  stds.append(np.std(results[fingerprint]))
+  stds.append(np.std(results[setting]))
+  print(f"{setting}: {mean:.2f} \pm {stds[-1]:.2f}")
 
-plt.errorbar([1,2,3], means, stds)
-plt.show()
 
