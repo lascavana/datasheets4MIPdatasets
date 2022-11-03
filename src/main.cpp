@@ -156,10 +156,10 @@ SCIP_RETCODE runSCIP(
     * Log stats *
     **************/
     ofstream logfile;
-    logfile.open("log.txt", ofstream::app);
+    logfile.open("results/log.txt", ofstream::app);
     logfile << "[INSTANCE] " << argv[1] << endl;
     logfile << "[NVARSORIG] " << SCIPgetNOrigVars(scip) << endl; 
-    logfile << "[NCONSSSORIG] " << SCIPgetNOrigConss(scip) << endl;
+    logfile << "[NCONSSORIG] " << SCIPgetNOrigConss(scip) << endl;
     logfile << "[NVARS] " << SCIPgetNVars(scip) << endl; 
     logfile << "[NCONSS] " << SCIPgetNConss(scip) << endl;
     logfile << "[NBINVARS] " << SCIPgetNBinVars(scip) << endl;
