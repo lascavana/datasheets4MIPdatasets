@@ -95,15 +95,6 @@ SCIP_RETCODE fromCommandLine(
    cout << "================" << endl << endl;
 
 
-   /**************
-    * Statistics *
-    **************/
-
-   // cout << endl << "Statistics" << endl;
-   // cout << "==========" << endl << endl;
-   //
-   // SCIP_CALL( SCIPprintStatistics(scip, NULL) );
-
    return SCIP_OKAY;
 }
 
@@ -167,7 +158,13 @@ SCIP_RETCODE runSCIP(
     ofstream logfile;
     logfile.open("log.txt", ofstream::app);
     logfile << "[INSTANCE] " << argv[1] << endl;
-    // logfile << "[SEED] " << "??" << endl;
+    logfile << "[NVARSORIG] " << SCIPgetNOrigVars(scip) << endl; 
+    logfile << "[NCONSSSORIG] " << SCIPgetNOrigConss(scip) << endl;
+    logfile << "[NVARS] " << SCIPgetNVars(scip) << endl; 
+    logfile << "[NCONSS] " << SCIPgetNConss(scip) << endl;
+    logfile << "[NBINVARS] " << SCIPgetNBinVars(scip) << endl;
+    logfile << "[NCONTVARS] " << SCIPgetNContVars(scip) << endl;
+    logfile << "[NINTVARS] " << SCIPgetNIntVars(scip) << endl; 
     logfile << "[ROOTDEGENERACY] " << Eventhdlr.eventhdlrdata.degeneracy << endl;
     logfile << "[ROOTVARCONSRATIO] " << Eventhdlr.eventhdlrdata.varconsratio << endl;
     logfile << "[FIRSTLPTIME] " << SCIPgetFirstLPTime(scip) << endl;
