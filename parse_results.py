@@ -21,7 +21,7 @@ for line in lines:
   if line[0] == "[NVARSORIG]":
     nvarsorig.append( int(line[1][:-1]) )
 
-  if line[0] == "[NCONSSSORIG]":
+  if line[0] == "[NCONSSORIG]":
     nconssorig.append( int(line[1][:-1]) )
 
   if line[0] == "[NVARS]":
