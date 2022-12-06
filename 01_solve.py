@@ -1,9 +1,9 @@
 import csv
 import glob
-import scipy
 import pyscipopt
 import numpy as np
 
+from plugins import ThreePhaseRec, PrimalDualTrack
 
 problem = 'cauctions'
 result_file = f'results/{problem}.csv'
@@ -31,9 +31,6 @@ additional_settings = {'default': {},
                       }
 
 
-# create model #
-m = pyscipopt.Model()
-
 # solve instances #
 with open(result_file, 'w', newline='') as csvfile:
   writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -51,12 +48,18 @@ with open(result_file, 'w', newline='') as csvfile:
                   'setting': sett,
                   'seed': seed }
 
-
+        # create model #
+        m = pyscipopt.Model()
         m.readProblem(instance)
+
+        # set parameters #
         m.setParam('randomization/permutationseed', seed)
         m.setParam('randomization/randomseedshift', seed)
         m.setParams(default_settings)
         m.setParams(additional_settings[sett])
+        
+        eveh = ThreePhaseRec()
+        m.includeEventhdlr(eveh, "ThreePhaseRec", "collects info about 3 phases of solving")
 
         m.optimize()
 
@@ -71,5 +74,3 @@ with open(result_file, 'w', newline='') as csvfile:
 
         writer.writerow(results)
         csvfile.flush()
-
-
