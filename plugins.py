@@ -1,53 +1,50 @@
 import time
+import numpy as np
 import pyscipopt as scip
 
-class ThreePhaseRec(scip.Eventhdlr):
+class FourPhaseRec(scip.Eventhdlr):
   """
   A SCIP event handler that records the 3 solving stages:
   feasibility, improvement, proof.
   """
   def __init__(self):
-    # record times #
-    self.start_time = -1.0
-    self.firstsol_time = -1.0
-    self.bestsol_time = -1.0
+    # record solutions and time #
+    self.times = []
+    self.start = -1.0
+    self.solutions = []
 
     # record phase lengths #
     self.phase1 = -1.0
     self.phase2 = -1.0
     self.phase3 = -1.0
-
-    # record solutions #
-    self.firstsol = None
-    self.bestsol = None
+    self.phase4 = -1.0
 
   def eventinit(self):
+    self.start = time.time()
     self.model.catchEvent(scip.SCIP_EVENTTYPE.BESTSOLFOUND, self)
-    self.start_time = time.time()
 
   def eventexit(self):
     self.model.dropEvent(scip.SCIP_EVENTTYPE.BESTSOLFOUND, self)
 
-  def eventexitsol(self):
-    end_time = time.time()
-    self.phase1 = self.firstsol_time - self.start_time
-    self.phase2 = self.bestsol_time - self.firstsol_time
-    self.phase3 = end_time - self.bestsol_time
+    currenttime = time.time()
 
-    self.bestsol = self.model.getSolObjVal( self.model.getBestSol() , original=True )
+    # determine solution that marks beginning of phase III #
+    solutions = np.array(self.solutions)
+    percentage_diff = abs(solutions - solutions[-1]) / (abs(solutions[-1]) + 1e-6)
+    k = np.where(percentage_diff < 0.05)[0][0]
 
+    # calculate lenght of each phase #
+    self.phase1 = self.times[0] - self.start
+    self.phase2 = self.times[k] - self.times[0]
+    self.phase3 = self.times[-1] - self.times[k]
+    self.phase4 = currenttime - self.times[-1] 
 
   def eventexec(self, event):
     currenttime = time.time()
     currentsol = self.model.getSolObjVal( self.model.getBestSol() , original=True )
 
-    if self.firstsol == None:
-      self.firstsol_time = currenttime
-      self.firstsol = currentsol
-      self.bestsol = currentsol
-    else:
-      self.bestsol_time = currenttime
-      self.bestsol = currentsol
+    self.times.append(currenttime)
+    self.solutions.append(currentsol)
 
 
 class PrimalDualTrack(scip.Eventhdlr):
@@ -76,6 +73,22 @@ class PrimalDualTrack(scip.Eventhdlr):
     self.dual.append(dualbound)
 
 
+class FirstBranchTime(scip.Eventhdlr):
+  """
+  A SCIP event handler that records when the first
+  branching happens.
+  """
+  def __init__(self):
+    self.start = -1.0
+    self.elapsed = -1.0
+
+  def eventinit(self):
+    self.start = time.time()
+    self.model.catchEvent(scip.SCIP_EVENTTYPE.NODEBRANCHED, self)
+
+  def eventexec(self, event):
+    self.elapsed = time.time() - self.start
+    self.model.dropEvent(scip.SCIP_EVENTTYPE.NODEBRANCHED, self)
 
 # class EventHandler(scip.Eventhdlr):
 #   """

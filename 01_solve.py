@@ -3,14 +3,16 @@ import glob
 import pyscipopt
 import numpy as np
 
-from plugins import ThreePhaseRec, PrimalDualTrack
+from plugins import FourPhaseRec, FirstBranchTime
 
 problem = 'cauctions'
 result_file = f'results/{problem}.csv'
 instance_path = f'benchmarks/{problem}'
 instances = glob.glob(f"{instance_path}/*.lp")
 
-fieldnames = ['instance', 'seed', 'fingerprint', 'setting', 'nnodes', 'time', 'status', 'gap']
+fieldnames = ['instance', 'seed', 'fingerprint', 'setting', 'nnodes', 'time', 
+              'status', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'first2opt_ratio',
+              'firstbranchtime']
 
 default_settings = {'limits/time': 3600,
                     'limits/memory': 4000,
@@ -58,8 +60,10 @@ with open(result_file, 'w', newline='') as csvfile:
         m.setParams(default_settings)
         m.setParams(additional_settings[sett])
         
-        eveh = ThreePhaseRec()
-        m.includeEventhdlr(eveh, "ThreePhaseRec", "collects info about 3 phases of solving")
+        eveh1 = FourPhaseRec()
+        eveh2 = FirstBranchTime()
+        m.includeEventhdlr(eveh1, "ThreePhaseRec", "collects info about 3 phases of solving")
+        m.includeEventhdlr(eveh2, "FirstBranchTime", "records the time of the first branching")
 
         m.optimize()
 
@@ -68,9 +72,18 @@ with open(result_file, 'w', newline='') as csvfile:
         results['time'] = m.getSolvingTime()
         results['status'] = m.getStatus()
         results['gap'] = m.getGap()
-        print(results)
+        first2opt_ratio = abs(eveh1.solutions[0] - eveh1.solutions[-1]) / (abs(eveh1.solutions[-1]) + 1e-6)
+        results['first2opt_ratio'] = '{:.4f}'.format(first2opt_ratio) 
+        results['firstbranchtime'] = '{:.4f}'.format(eveh2.elapsed) 
 
         m.freeProb()
+
+        results['phase1'] = '{:.4f}'.format(eveh1.phase1) 
+        results['phase2'] = '{:.4f}'.format(eveh1.phase2) 
+        results['phase3'] = '{:.4f}'.format(eveh1.phase3) 
+        results['phase4'] = '{:.4f}'.format(eveh1.phase4) 
+        
+        print(results)
 
         writer.writerow(results)
         csvfile.flush()
